@@ -1,6 +1,7 @@
 package com.fetch_hiring.fetch;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -41,6 +42,9 @@ public class MainActivity extends AppCompatActivity {
         // Find the RecyclerView in the activity's layout and set its layout manager
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        // Add dividers between items for better visual separation
+        recyclerView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
 
         fetchData();
     }
