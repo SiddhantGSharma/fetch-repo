@@ -35,33 +35,35 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Set the layout for the activity to the XML layout file
         setContentView(R.layout.activity_main);
 
+        // Find the RecyclerView in the activity's layout and set its layout manager
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         fetchData();
     }
 
+    // Method to fetch data from a URL on a separate thread to avoid blocking the UI thread
     private void fetchData() {
+        // Create a new Executor with a single thread to execute tasks asynchronously
         Executor executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> {
             String dataJsonString = getDataFromUrl("https://fetch-hiring.s3.amazonaws.com/hiring.json");
+
             if (dataJsonString != null) {
                 // Process the retrieved data here
-                //Log.d(TAG, dataJsonString); - this was to check if the json data was fetched properly
-
                 List<DataItem> dataItems = parseJson(dataJsonString);
 
                 if (dataItems != null) {
                     // Apply grouping, sorting, and filtering
-
-                    //displayItems(dataItems); - not needed after adding UI aspect of app
-
                     List<DataItem> sortedAndFilteredItems = processItems(dataItems);
 
                     runOnUiThread(() -> {
+                        // Create a new DataAdapter with the sorted and filtered data
                         dataAdapter = new DataAdapter(sortedAndFilteredItems);
+                        // Set the adapter on the RecyclerView to display the data on the UI
                         recyclerView.setAdapter(dataAdapter);
                     });
                 }
@@ -69,16 +71,17 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    // Method to retrieve data from the specified URL and return it as a String
     private String getDataFromUrl(String urlString) {
-        HttpURLConnection urlConnection = null;
-        BufferedReader reader = null;
-        String dataJsonString = null;
+        HttpURLConnection urlConnection = null; // Used to establish the connection with the URL
+        BufferedReader reader = null; // Used to read the data from the URL
+        String dataJsonString = null; // The resulting JSON data as a String
 
         try {
             URL url = new URL(urlString);
-            urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.connect();
+            urlConnection = (HttpURLConnection) url.openConnection(); // Open a connection to the URL
+            urlConnection.setRequestMethod("GET"); // Set the HTTP request method to GET
+            urlConnection.connect(); // Connect to the URL
 
             // Read the input stream into a String
             InputStream inputStream = urlConnection.getInputStream();
@@ -91,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
             reader = new BufferedReader(new InputStreamReader(inputStream));
 
+            // Read the data line by line from the BufferedReader
             String line;
             while ((line = reader.readLine()) != null) {
                 buffer.append(line).append("\n");
@@ -103,9 +107,11 @@ public class MainActivity extends AppCompatActivity {
 
             dataJsonString = buffer.toString();
         } catch (IOException e) {
+            // An error occurred while trying to retrieve the data from the URL
             Log.e(TAG, "Error", e);
             return null;
         } finally {
+            // Close the URL connection and BufferedReader
             if (urlConnection != null) {
                 urlConnection.disconnect();
             }
@@ -121,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
         return dataJsonString;
     }
 
+    // takes the JSON data as a string and uses the Gson library to convert it into a list of DataItem objects
     private List<DataItem> parseJson(String dataJsonString) {
         Gson gson = new Gson();
         Type type = new TypeToken<List<DataItem>>() {}.getType();
@@ -144,27 +151,4 @@ public class MainActivity extends AppCompatActivity {
 
         return groupedItems;
     }
-
-    //This code was to display the sorted data in Logcat for testing
-
-//    private void displayItems(List<DataItem> dataItems) {
-//        // Group the items by "listId" filtering out "null" values
-//        List<DataItem> groupedItems = dataItems.stream()
-//                .filter(item -> item.getName() != null && !item.getName().isEmpty())
-//                .collect(Collectors.groupingBy(DataItem::getListId))
-//                .values()
-//                .stream()
-//                .flatMap(List::stream)
-//                .collect(Collectors.toList());
-//
-//        // Sort the results first by "listId" then by "name"
-//        Collections.sort(groupedItems, Comparator
-//                .comparingInt(DataItem::getListId)
-//                .thenComparing(DataItem::getName));
-//
-//        // Print the grouped and sorted items
-//        for (DataItem item : groupedItems) {
-//            Log.d(TAG, "listId: " + item.getListId() + ", name: " + item.getName());
-//        }
-//    }
 }

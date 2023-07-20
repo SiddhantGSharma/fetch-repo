@@ -1,5 +1,7 @@
 package com.fetch_hiring.fetch;
 
+// DataItem represents a model class that holds the data for each item fetched.
+
 import com.google.gson.annotations.SerializedName;
 
 public class DataItem {
